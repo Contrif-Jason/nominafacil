@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NóminaFácil · Actualizaciones normativas</title>
+<meta name="description" content="Actualizaciones normativas de NóminaFácil by Contrif: salario mínimo, auxilio de transporte, recargos, jornada y modelos de contrato.">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Poppins,Arial,sans-serif;background:#f2f4f8;color:#1d2230}
+header{background:#01003D;color:#fff;padding:26px 20px 22px;border-bottom:5px solid #0080FF;text-align:center}
+header h1{margin:0;font-size:24px}
+header p{margin:6px 0 0;opacity:.85;font-size:14px}
+main{max-width:860px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #d9dce3;border-radius:14px;padding:22px;margin-bottom:16px}
+h2{color:#001372;font-size:18px;margin:0 0 6px}
+.muted{color:#5D5D5D;font-size:14px;line-height:1.55}
+.chip{display:inline-block;background:#e6f0ff;color:#001372;border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin-right:6px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:10px}
+th{background:#01003D;color:#fff;text-align:left;padding:8px 10px;font-weight:600}
+td{border-bottom:1px solid #e6e9ef;padding:8px 10px}
+td.v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+ul{padding-left:20px;line-height:1.6}
+.btn{display:inline-block;background:#001372;color:#fff;text-decoration:none;border-radius:8px;padding:10px 16px;font-weight:600;margin-top:12px}
+ol{line-height:1.7;color:#333}
+footer{text-align:center;color:#9aa3ab;font-size:12px;padding:10px 16px 26px}
+</style>
+</head>
+<body>
+<header><h1>NóminaFácil · Actualizaciones normativas</h1><p>Parámetros legales y modelos de contrato vigentes, publicados por Asesorías Contrif</p></header>
+<main>
+  <div class="card" id="ultima"><p class="muted">Cargando la última actualización…</p></div>
+  <div class="card"><h2>Cómo aplicar la actualización</h2>
+    <ol>
+      <li>Abra NóminaFácil y vaya a <b>Empresa y configuración</b>.</li>
+      <li>En <b>Licencia y actualización normativa</b>, haga clic en <b>Buscar actualización</b>.</li>
+      <li>Revise los cambios que se muestran y haga clic en <b>Aplicar actualización</b>.</li>
+    </ol>
+    <p class="muted">Si su equipo no tiene acceso a internet, descargue el archivo con el botón de arriba y cárguelo con <b>Cargar archivo de actualización</b>. Las actualizaciones están firmadas por Asesorías Contrif: el programa rechaza cualquier archivo modificado. Se aplican a las licencias con actualizaciones vigentes a la fecha de publicación.</p>
+  </div>
+</main>
+<footer>NóminaFácil by Contrif · Asesorías Contrif</footer>
+<script>
+const TXT = {smmlv:'Salario mínimo (SMMLV)', aux:'Auxilio de transporte', horasSem:'Jornada máxima semanal (horas)', heD:'Recargo hora extra diurna', heN:'Recargo hora extra nocturna',
+  recN:'Recargo nocturno', recDF:'Recargo dominical y festivo', eps:'Aporte a salud del empleado', pen:'Aporte a pensión del empleado', incDiasEmp:'Días de incapacidad a cargo del empleador',
+  incPctEmp:'Incapacidad a cargo del empleador', incPctEps:'Incapacidad a cargo de la EPS', ibcMin:'IBC mínimo de 1 SMMLV', ley1393:'Regla del 40 % (Ley 1393 de 2010)'};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+const COP = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', maximumFractionDigits:0});
+const val = (k, v) => typeof v === 'boolean' ? (v ? 'Sí' : 'No') : ['smmlv', 'aux'].includes(k) ? COP.format(v) : v > 0 && v < 1 ? (Math.round(v * 10000) / 100).toLocaleString('es-CO') + ' %' : v;
+const fecha = f => f ? new Date(f + 'T12:00:00').toLocaleDateString('es-CO', {day:'numeric', month:'long', year:'numeric'}) : '';
+fetch('actualizacion.json?t=' + Date.now()).then(r => r.json()).then(o => {
+  const s = o.p.replace(/-/g, '+').replace(/_/g, '/'), u = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s + '='.repeat((4 - s.length % 4) % 4)), c => c.charCodeAt(0))));
+  const params = Object.entries(u.params || {});
+  document.getElementById('ultima').innerHTML = `<h2>Última actualización: versión ${esc(u.version)}</h2>
+    <p><span class="chip">Publicada el ${esc(fecha(u.fecha))}</span>${u.vigencia ? `<span class="chip">Vigente desde el ${esc(fecha(u.vigencia))}</span>` : ''}${u.contratos?.tipos ? `<span class="chip">Modelos de contrato ${esc(u.contratos.version)}</span>` : ''}</p>
+    ${u.notas?.length ? `<ul>${u.notas.map(n => `<li>${esc(n)}</li>`).join('')}</ul>` : ''}
+    ${params.length ? `<table><thead><tr><th>Parámetro</th><th style="text-align:right">Valor</th></tr></thead><tbody>${params.map(([k, v]) => `<tr><td>${esc(TXT[k] || k)}</td><td class="v">${esc(val(k, v))}</td></tr>`).join('')}</tbody></table>` : ''}
+    <a class="btn" href="actualizacion.json" download="nominafacil-actualizacion-${esc(u.version)}.json">⬇ Descargar archivo de actualización</a>`;
+}).catch(() => { document.getElementById('ultima').innerHTML = '<p class="muted">No hay actualizaciones publicadas todavía.</p>'; });
+</script>
+</body>
+</html>
